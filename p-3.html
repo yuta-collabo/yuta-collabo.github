@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>p-3</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f0f0f0; }
+    h1{text-align: center; padding-top:30px; padding-bottom:30px;}
+    .gallery { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+      gap: 10px; 
+      padding: 20px;
+    }
+    .gallery-item {
+      position: relative;
+      overflow: hidden;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      aspect-ratio: 1 / 1; /* 正方形 */
+    }
+    .gallery-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      cursor: pointer;
+      border-radius: 10px;
+    }
+    .modal { 
+      display: none; 
+      position: fixed; 
+      top: 0; left: 0; right: 0; bottom: 0; 
+      background: rgba(0, 0, 0, 0.8); 
+      justify-content: center; 
+      align-items: center; 
+      z-index: 1000; 
+    }
+    .modal-content { 
+      max-width: 80%; 
+      max-height: 100%; 
+      background: #fff; 
+      padding:0 10px; 
+      border-radius: 10px; 
+      text-align: center; 
+      position: relative;
+    }
+    #modal-image{
+     width:70%;
+    }
+    .close-btn { 
+      position: absolute; 
+      top: 10px; 
+      right: 10px; 
+      font-size: 30px; 
+      color: #fff; 
+      cursor: pointer; 
+    }
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    .pagination button {
+      padding: 10px 20px;
+      margin: 0 5px;
+      border: none;
+      background-color: #007BFF;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .pagination button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    .password-modal {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 10000;
+    }
+    .password-container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .password-input {
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .password-btn {
+      padding: 10px 20px;
+      background-color: #007BFF;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- パスワード入力モーダル -->
+  <div class="password-modal" id="password-modal">
+    <div class="password-container">
+      <h2>パスワードを入力してください</h2>
+      <input type="password" id="password-input" class="password-input" placeholder="パスワード" />
+      <button class="password-btn" id="password-btn">送信</button>
+    </div>
+  </div>
+
+  <h1>Japanese boys 17~</h1>
+
+  <div class="gallery" id="gallery" style="display: none;"></div>
+
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="close-btn">&times;</span>
+      <img id="modal-image" src="" alt="" />
+    </div>
+  </div>
+
+  <!-- ページ遷移ボタン -->
+  <div class="pagination">
+    <button id="prev-btn">前ページ</button>
+    <button id="next-btn">次ページ</button>
+  </div>
+
+  <script>
+    const passwordModal = document.getElementById('password-modal');
+    const passwordInput = document.getElementById('password-input');
+    const passwordBtn = document.getElementById('password-btn');
+    const gallery = document.getElementById('gallery');
+    const modal = document.getElementById('modal');
+    const modalImage = document.getElementById('modal-image');
+    const closeBtn = document.getElementById('close-btn');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+
+    const imagesPerPage = 50; // 1ページに表示する画像数
+    const totalImages = 200;   // 画像の総数
+    const folderPath = 'images/p-3/'; // 画像のフォルダパス
+
+    let currentPage = 1; // 現在のページ
+
+    // パスワードチェック
+    passwordBtn.addEventListener('click', () => {
+      const enteredPassword = passwordInput.value;
+      if (enteredPassword === '206521') {
+        passwordModal.style.display = 'none';  // パスワードが正しい場合、モーダルを非表示にする
+        loadImages();  // ギャラリーをロードする
+      } else {
+        alert('パスワードが間違っています。');
+      }
+    });
+
+    // ギャラリーアイテムを作成
+    function loadImages() {
+      gallery.style.display = 'grid'; // ギャラリーを表示する
+      gallery.innerHTML = ''; // ギャラリーをクリア
+
+      const startIndex = (currentPage - 1) * imagesPerPage + 1;
+      const endIndex = Math.min(currentPage * imagesPerPage, totalImages);
+
+      for (let i = startIndex; i <= endIndex; i++) {
+        const front = 'p ('
+        const back =')'
+        const filePath = `${folderPath}${front}${i}${back}.png`;
+        const item = document.createElement('div');
+        item.classList.add('gallery-item');
+        item.innerHTML = `<img src="${filePath}" alt="Image ${i}" class="gallery-image" />`;
+        gallery.appendChild(item);
+
+        // クリックで拡大表示
+        item.addEventListener('click', () => {
+          modalImage.src = filePath;
+          modal.style.display = 'flex';
+        });
+      }
+
+      // ボタンの有効・無効を設定
+      prevBtn.disabled = currentPage === 1;
+      nextBtn.disabled = currentPage * imagesPerPage >= totalImages;
+    }
+
+    // モーダルを閉じる
+    closeBtn.addEventListener('click', () => {
+      modal.style.display = 'none';
+      modalImage.src = '';
+    });
+
+    // モーダル外部クリックで閉じる
+    modal.addEventListener('click', e => {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+        modalImage.src = '';
+      }
+    });
+
+    // ページ遷移
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        loadImages();
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentPage * imagesPerPage < totalImages) {
+        currentPage++;
+        loadImages();
+      }
+    });
+  </script>
+
+</body>
+</html>
